@@ -67,7 +67,7 @@ try:
 
     if config.timeout > 0:
         time.sleep(config.timeout)
-        listener_thread.interrupted = True
+        listener_thread.is_interrupted = True
         logging.info(f"Exit by timeout {config.timeout}s")
 
     while listener_thread.is_alive():
@@ -75,5 +75,6 @@ try:
 except KeyboardInterrupt:
     print("Exiting main thread...")
 finally:
-    listener_thread.interrupted = True
+    listener_thread.is_interrupted = True
+    listener_thread.join()
     finalize_kprobes(b)

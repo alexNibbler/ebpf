@@ -11,11 +11,21 @@ class Operation(Enum):
 
 
 class Listener(threading.Thread):
-
     def __init__(self, bpf: BPF):
         threading.Thread.__init__(self)
-        self.interrupted = False
+        self._interrupted = False
         self.bpf = bpf
+        self.lock = threading.Lock()
+
+    @property
+    def is_interrupted(self):
+        with self.lock:
+            return self._interrupted
+
+    @is_interrupted.setter
+    def is_interrupted(self, val: bool):
+        with self.lock:
+            self._interrupted = val
 
     @staticmethod
     def convert_operation_enum_to_string(op_int: int) -> str:
@@ -38,5 +48,5 @@ class Listener(threading.Thread):
         Loop with polling the ring buffer and printing the data captured by probes
         """
         self.bpf["events"].open_perf_buffer(self.print_event)
-        while not self.interrupted:
+        while not self.is_interrupted:
             self.bpf.perf_buffer_poll(timeout=500)
