@@ -61,16 +61,19 @@ pass_input_params_to_ebpf(bpf = b)
 init_kprobes(b)
 listener_thread = Listener(bpf = b)
 logging.info("Tracing sys_read and sys_write... Ctrl+C to exit.")
-listener_thread.start()
-
-if config.timeout > 0:
-    time.sleep(config.timeout)
-    listener_thread.interrupted = True
-    logging.info(f"Exit by timeout {config.timeout}s")
 
 try:
-    listener_thread.join()
+    listener_thread.start()
+
+    if config.timeout > 0:
+        time.sleep(config.timeout)
+        listener_thread.interrupted = True
+        logging.info(f"Exit by timeout {config.timeout}s")
+
+    while listener_thread.is_alive():
+        listener_thread.join(timeout = 0.5)
 except KeyboardInterrupt:
     print("Exiting main thread...")
 finally:
+    listener_thread.interrupted = True
     finalize_kprobes(b)

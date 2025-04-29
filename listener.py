@@ -39,8 +39,4 @@ class Listener(threading.Thread):
         """
         self.bpf["events"].open_perf_buffer(self.print_event)
         while not self.interrupted:
-            try:
-                self.bpf.perf_buffer_poll(timeout=500)
-            except KeyboardInterrupt:
-                print("Exiting listener thread...")
-                break
+            self.bpf.perf_buffer_poll(timeout=500)
