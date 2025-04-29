@@ -10,10 +10,6 @@ from listener import Listener
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s")
 
-class InputParam(Enum):
-    UID = 1
-    PID = 2
-
 def safe_attach(bpf: BPF, event_name: str, func_name: str) -> None:
     try:
         bpf.attach_kprobe(event=event_name, fn_name=func_name)
@@ -43,6 +39,11 @@ def finalize_kprobes(bpf: BPF) -> None:
     safe_detach(bpf, event_name="__x64_sys_write", func_name="trace_sys_write")
     safe_detach(bpf, event_name="sys_write", func_name="trace_sys_write")
 
+
+class InputParam(Enum):
+    UID = 1
+    PID = 2
+
 def pass_input_params_to_ebpf(bpf: BPF) -> None:
     try:
         if config.UID_TO_TRACE != "-1":
@@ -59,6 +60,8 @@ def pass_input_params_to_ebpf(bpf: BPF) -> None:
 b = BPF(text = ebpf_program_text)
 pass_input_params_to_ebpf(bpf = b)
 init_kprobes(b)
+
+# creating a listener - thread that polls the PERF_BUFFER and prints results to stdout via callback
 listener_thread = Listener(bpf = b)
 logging.info("Tracing sys_read and sys_write... Ctrl+C to exit.")
 
@@ -66,13 +69,17 @@ try:
     listener_thread.start()
 
     if config.timeout > 0:
+        # if cli parameter --time was passed to the application on start,
+        # the app should terminate after that amount of seconds
         time.sleep(config.timeout)
         listener_thread.is_interrupted = True
         logging.info(f"Exit by timeout {config.timeout}s")
 
+    # waiting for the listener to finish work
     while listener_thread.is_alive():
         listener_thread.join(timeout = 0.5)
 except KeyboardInterrupt:
+    # handle ctrl+C
     print("Exiting main thread...")
 finally:
     listener_thread.is_interrupted = True

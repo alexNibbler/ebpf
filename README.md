@@ -1,5 +1,9 @@
+## About the application
+The application is a user plan in python, working with ebpf via bcc. It was tested in GCP Compute Engine VMs with Ubuntu 24.10 and Debian 12. The application demonstrates:
+- attaching kprobes to sys_read and sys_write
+- reporting to stdout READ or WRITE, time of the hook execution, pid and command name. Data is passed from ebpf to the application via BPF_PERF_OUTPUT
+- ability to pass pid and uid into ebpf via BPF_HASH to filter for report only events related to the specific process or specific user
 ## Installation instructions
-
 1. Copy trace_app.zip to your Linux machine and unzip it. You should get "install_and_start.sh" script, and several .py files.
 2. To install required dependencies and run the application:
 ```commandline
