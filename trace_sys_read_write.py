@@ -19,7 +19,14 @@ def safe_attach(bpf: BPF, event_name: str, func_name: str) -> None:
         bpf.attach_kprobe(event=event_name, fn_name=func_name)
         logging.debug(f"Attached function {func_name} to event {event_name}")
     except Exception as e:
-        logging.warning(f"Failed to attach to {event_name}: {e}")
+        logging.warning(f"Failed to attach {func_name} to {event_name}: {e}")
+
+def safe_detach(bpf: BPF, event_name: str, func_name: str) -> None:
+    try:
+        bpf.detach_kprobe(event=event_name, fn_name=func_name)
+        logging.debug(f"Detached function {func_name} from event {event_name}")
+    except Exception as e:
+        logging.warning(f"Failed to detach {func_name} from {event_name}: {e}")
 
 def init_kprobes(bpf: BPF) -> None:
     # Attach kprobes, trying for both 32 and 64-bit systems with try-except
@@ -28,6 +35,13 @@ def init_kprobes(bpf: BPF) -> None:
     safe_attach(bpf, event_name="sys_read", func_name="trace_sys_read")
     safe_attach(bpf, event_name="__x64_sys_write", func_name="trace_sys_write")
     safe_attach(bpf, event_name="sys_write", func_name="trace_sys_write")
+
+def finalize_kprobes(bpf: BPF) -> None:
+    # Detach kprobes for clean application exit
+    safe_detach(bpf, event_name="__x64_sys_read", func_name="trace_sys_read")
+    safe_detach(bpf, event_name="sys_read", func_name="trace_sys_read")
+    safe_detach(bpf, event_name="__x64_sys_write", func_name="trace_sys_write")
+    safe_detach(bpf, event_name="sys_write", func_name="trace_sys_write")
 
 def pass_input_params_to_ebpf(bpf: BPF) -> None:
     try:
@@ -58,3 +72,5 @@ try:
     listener_thread.join()
 except KeyboardInterrupt:
     print("Exiting main thread...")
+finally:
+    finalize_kprobes(b)
