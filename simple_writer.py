@@ -1,3 +1,7 @@
+"""
+Script for testing purposes. Run this script to produce Read and write operations
+"""
+
 print("Type anything to be written to output.txt")
 print("Type 'exit' to quit")
 with open("output.txt", "w") as f:
