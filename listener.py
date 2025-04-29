@@ -31,7 +31,7 @@ class Listener(threading.Thread):
         data = self.bpf["events"].event(data)
         event_datetime = datetime.fromtimestamp(config.system_start_ts + data.ts / 1_000_000_000)
         operation = self.convert_operation_enum_to_string(data.op)
-        print(operation.rjust(5), repr(event_datetime).rjust(28), repr(data.pid).rjust(6), data.comm.decode())
+        print(operation.rjust(5), str(event_datetime).rjust(28), str(data.pid).rjust(6), data.comm.decode())
 
     def run(self):
         """
