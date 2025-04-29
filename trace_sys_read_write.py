@@ -1,12 +1,18 @@
 import time
 from bcc import BPF
 import logging
+from enum import Enum
+from ctypes import c_int
 
 import config
 from ebpf_program import ebpf_program_text
 from listener import Listener
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s")
+
+class InputParam(Enum):
+    UID = 1
+    PID = 2
 
 def safe_attach(bpf: BPF, event_name: str, func_name: str) -> None:
     try:
@@ -23,12 +29,21 @@ def init_kprobes(bpf: BPF) -> None:
     safe_attach(bpf, event_name="__x64_sys_write", func_name="trace_sys_write")
     safe_attach(bpf, event_name="sys_write", func_name="trace_sys_write")
 
-def replace_program_placeholders(input_program_text: str) -> str:
-    program_with_replaced_params = input_program_text.replace("%PID_TO_TRACE%", config.PID_TO_TRACE)
-    program_with_replaced_params = program_with_replaced_params.replace("%UID_TO_TRACE%", config.UID_TO_TRACE)
-    return program_with_replaced_params
+def pass_input_params_to_ebpf(bpf: BPF) -> None:
+    try:
+        if config.UID_TO_TRACE != "-1":
+            bpf["input_table"][c_int(InputParam.UID.value)] = c_int(int(config.UID_TO_TRACE))
+    except ValueError:
+        logging.warning(f"UID_TO_TRACE environment variable should be an non-negative integer.")
+    try:
+        if config.PID_TO_TRACE != "-1":
+            bpf["input_table"][c_int(InputParam.PID.value)] = c_int(int(config.PID_TO_TRACE))
+    except ValueError:
+        logging.warning(f"PID_TO_TRACE environment variable should be an non-negative integer.")
 
-b = BPF(text = replace_program_placeholders(ebpf_program_text))
+
+b = BPF(text = ebpf_program_text)
+pass_input_params_to_ebpf(bpf = b)
 init_kprobes(b)
 listener_thread = Listener(bpf = b)
 logging.info("Tracing sys_read and sys_write... Ctrl+C to exit.")
