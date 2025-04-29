@@ -16,6 +16,8 @@ def parse_args() -> Namespace:
 
     return parser.parse_args()
 
+EBPF_C_FILE_PATH = "ebpf_c/ebpf_program.c"
+
 # Set env variables to trace kernal events only related to specific system user or process
 UID_TO_TRACE = os.getenv("UID_TO_TRACE", default="-1")
 PID_TO_TRACE = os.getenv("PID_TO_TRACE", default="-1")

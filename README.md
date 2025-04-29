@@ -4,7 +4,7 @@ The application is a user plan in python, working with ebpf via bcc. It was test
 - reporting to stdout READ or WRITE, time of the hook execution, pid and command name. Data is passed from ebpf to the application via BPF_PERF_OUTPUT
 - ability to pass pid and uid into ebpf via BPF_HASH to filter for report only events related to the specific process or specific user
 ## Installation instructions
-1. Copy the repository to your Linux machine. You should get `install_and_start.sh` script, and several `*.py` files. Regarding `requirements.txt` - it is not a part of the default installation way, however it's a good practice for python applications to have dependencies listed there.
+1. Copy the repository to your Linux machine. You should get `install_and_start.sh` script, `ebpf_c` directory with ebpf program code in C, and several `*.py` files. Regarding `requirements.txt` - it is not a part of the default installation way, however it's a good practice for python applications to have dependencies listed there.
 2. To install required dependencies and run the application:
 ```commandline
 chmod +x install_and_start.sh

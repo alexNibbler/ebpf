@@ -5,7 +5,6 @@ from enum import Enum
 from ctypes import c_int
 
 import config
-from ebpf_program import ebpf_program_text
 from listener import Listener
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(message)s")
@@ -57,7 +56,7 @@ def pass_input_params_to_ebpf(bpf: BPF) -> None:
         logging.warning(f"PID_TO_TRACE environment variable should be an non-negative integer.")
 
 
-b = BPF(text = ebpf_program_text)
+b = BPF(src_file = config.EBPF_C_FILE_PATH)
 pass_input_params_to_ebpf(bpf = b)
 init_kprobes(b)
 

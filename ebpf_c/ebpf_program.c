@@ -1,4 +1,3 @@
-ebpf_program_text = """
 // define output data structure in C
 enum Operation {
     READ = 1,
@@ -74,4 +73,3 @@ int trace_sys_write(void *ctx) {
     }
     return 0;
 }
-"""
