@@ -7,12 +7,12 @@ The application is a user plan in python, working with ebpf via bcc. It was test
 1. Copy the repository to your Linux machine. You should get `install_and_start.sh` script, `ebpf_c` directory with ebpf program code in C, and several `*.py` files. Regarding `requirements.txt` - it is not a part of the default installation way, however it's a good practice for python applications to have dependencies listed there.
 2. To install required dependencies and run the application:
 ```commandline
-chmod +x install_and_start.sh
+sudo chmod +x install_and_start.sh
 ./install_and_start.sh
 ```
 3. If you want to run the application without dependencies installation, run:
 ```commandline
-sudo python3 app/trace_sys_read_write.py
+sudo python3 trace_sys_read_write.py
 ```
 ## Running parameters
 There are several parameters to customize the application usage.
