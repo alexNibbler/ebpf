@@ -8,7 +8,17 @@ from enum import Enum
 class Operation(Enum):
     READ = 1
     WRITE = 2
+    UNKNOWN = 0
 
+    @classmethod
+    def from_value(cls, value: int) -> "Operation":
+        try:
+            return cls(value)
+        except ValueError:
+            return cls.UNKNOWN
+
+    def __str__(self):
+        return self.name
 
 class Listener(threading.Thread):
     def __init__(self, bpf: BPF):
@@ -27,21 +37,14 @@ class Listener(threading.Thread):
         with self.lock:
             self._interrupted = val
 
-    @staticmethod
-    def convert_operation_enum_to_string(op_int: int) -> str:
-        if op_int == Operation.READ.value:
-            return "READ"
-        elif op_int == Operation.WRITE.value:
-            return "WRITE"
-
     def print_event(self, cpu, data, size) -> None:
         """
         Callback to be executed on polling the ring buffer
         """
         data = self.bpf["events"].event(data)
         event_datetime = datetime.fromtimestamp(config.system_start_ts + data.ts / 1_000_000_000)
-        operation = self.convert_operation_enum_to_string(data.op)
-        print(operation.rjust(5), str(event_datetime).rjust(28), str(data.pid).rjust(6), data.comm.decode())
+        operation = Operation.from_value(data.op)
+        print(str(operation).rjust(7), str(event_datetime).rjust(28), str(data.pid).rjust(6), data.comm.decode())
 
     def run(self):
         """

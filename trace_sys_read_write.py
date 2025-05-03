@@ -12,16 +12,16 @@ logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s: %(me
 def safe_attach(bpf: BPF, event_name: str, func_name: str) -> None:
     try:
         bpf.attach_kprobe(event=event_name, fn_name=func_name)
-        logging.debug(f"Attached function {func_name} to event {event_name}")
+        logging.info(f"Attached function {func_name} to event {event_name}")
     except Exception as e:
-        logging.warning(f"Failed to attach {func_name} to {event_name}: {e}")
+        logging.info(f"Failed to attach {func_name} to {event_name}: {e}")
 
 def safe_detach(bpf: BPF, event_name: str, func_name: str) -> None:
     try:
         bpf.detach_kprobe(event=event_name, fn_name=func_name)
-        logging.debug(f"Detached function {func_name} from event {event_name}")
+        logging.info(f"Detached function {func_name} from event {event_name}")
     except Exception as e:
-        logging.warning(f"Failed to detach {func_name} from {event_name}: {e}")
+        logging.info(f"Failed to detach {func_name} from {event_name}: {e}")
 
 def init_kprobes(bpf: BPF) -> None:
     # Attach kprobes, trying for both 32 and 64-bit systems with try-except
